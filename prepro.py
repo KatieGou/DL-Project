@@ -15,7 +15,7 @@ def rewrite():
             f.write('{}\n'.format(w))
     with open('news-v16.en','w', encoding='utf8') as f:
         for w in en:
-            f.write('{}\n'.format(w))
+            f.write('{}'.format(w))
             
 def vocab(ftext,fvocab):
     text = codecs.open(ftext, 'r', 'utf-8').read()
