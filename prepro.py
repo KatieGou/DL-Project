@@ -8,8 +8,9 @@ def rewrite():
     with open('news-commentary-v16.de-en.tsv','r', encoding='utf8') as f:
         for line in f:
             d,e=line.split('\t')
-            en.append(e)
-            de.append(d)
+            if d and e!='\n':
+                en.append(e)
+                de.append(d)
     with open('news-v16.de','w', encoding='utf8') as f:
         for w in de:
             f.write('{}\n'.format(w))
