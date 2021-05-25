@@ -1,4 +1,4 @@
-from train import Transformer, CustomSchedule, translate_batch
+from train import Transformer, translate_batch
 from setting import hyperparams as hp
 import tensorflow_datasets as tfds
 import tensorflow as tf
@@ -18,36 +18,32 @@ if __name__ == '__main__':
     for scr, tar in test_data:
         real.append([bytes.decode(tar.numpy()).split()])
         
-    def encode(lang1, lang2):
-        lang1 = [coder_scr.vocab_size] + coder_scr.encode(
-          lang1.numpy()) + [coder_scr.vocab_size+1]
+    def encoder(scr, tar):
+        scr = [coder_scr.vocab_size] + coder_scr.encode(
+          scr.numpy()) + [coder_scr.vocab_size+1]
 
-        lang2 = [coder_tar.vocab_size] + coder_tar.encode(
-          lang2.numpy()) + [coder_tar.vocab_size+1]
+        tar = [coder_tar.vocab_size] + coder_tar.encode(
+          tar.numpy()) + [coder_tar.vocab_size+1]
 
-        return lang1, lang2
+        return scr, tar
 
-    def tf_encode(scr, tar):
-        result_scr, result_tar = tf.py_function(encode, [scr, tar], [tf.int64, tf.int64])
-        result_scr.set_shape([None])
-        result_tar.set_shape([None])
+    def tf_encoder(scr, tar):
+        code_scr, code_tar = tf.py_function(encoder, [scr, tar], [tf.int64, tf.int64])
+        code_scr.set_shape([None])
+        code_tar.set_shape([None])
 
-        return result_scr, result_tar
+        return code_scr, code_tar
 
-    test_data = test_data.map(tf_encode)
+    test_data = test_data.map(tf_encoder)
     test_data = test_data.padded_batch(hp.batch_size)
     test_data = test_data.prefetch(tf.data.experimental.AUTOTUNE)
 
     input_vocab_size = coder_scr.vocab_size + 2
     target_vocab_size = coder_tar.vocab_size + 2
 
-#     learning_rate = CustomSchedule(hp.num_nodes)
-
     optimizer = tf.keras.optimizers.Adam(0.001, beta_1=0.9, beta_2=0.98, epsilon=1e-9)
     
-    transformer = Transformer(hp.num_layers, hp.num_nodes, hp.num_heads, hp.dff, input_vocab_size, target_vocab_size, pe_input=input_vocab_size, 
-                              pe_target=target_vocab_size,rate=hp.dropout_rate)
-
+    transformer = Transformer(input_vocab_size, target_vocab_size)
 
     ckpt = tf.train.Checkpoint(transformer=transformer, optimizer=optimizer)
 
