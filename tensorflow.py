@@ -360,7 +360,7 @@ if __name__ == '__main__':
     num_epoch=0
     # restore checkpoint
     if ckpt_manager.latest_checkpoint:
-        num_epoch=int(ckpt_manager.latest_checkpoint[-2:])
+        num_epoch=abs(int(ckpt_manager.latest_checkpoint[-2:]))
         ckpt.restore(ckpt_manager.latest_checkpoint)
         print ('Latest checkpoint {} restored!!'.format(num_epoch))
 
