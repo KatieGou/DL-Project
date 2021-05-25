@@ -80,11 +80,11 @@ class MultiHeadAttention(tf.keras.layers.Layer):
         v = self.split_heads(v, batch_size)  # (batch_size, num_heads, seq_len_v, depth)
 
         # scaled_attention.shape == (batch_size, num_heads, seq_len_q, depth)
-        scaled_attention = scaled_attention(q, k, v, mask)
+        attention = scaled_attention(q, k, v, mask)
 
-        scaled_attention = tf.transpose(scaled_attention, perm=[0, 2, 1, 3])  # (batch_size, seq_len_q, num_heads, depth)
+        attention = tf.transpose(attention, perm=[0, 2, 1, 3])  # (batch_size, seq_len_q, num_heads, depth)
 
-        concat_attention = tf.reshape(scaled_attention, (batch_size, -1, self.num_nodes))  # (batch_size, seq_len_q, num_nodes)
+        concat_attention = tf.reshape(attention, (batch_size, -1, self.num_nodes))  # (batch_size, seq_len_q, num_nodes)
 
         output = self.dense(concat_attention)  # (batch_size, seq_len_q, num_nodes)
 
@@ -358,9 +358,9 @@ if __name__ == '__main__':
     ckpt_manager = tf.train.CheckpointManager(ckpt, hp.checkpoint_path, max_to_keep=20)
 
     num_epoch=0
-    # 如果检查点存在，则恢复最新的检查点。
+    # restore checkpoint
     if ckpt_manager.latest_checkpoint:
-        num_epoch=int(ckpt_manager.latest_checkpoint[-2:])
+        num_epoch=abs(int(ckpt_manager.latest_checkpoint[-2:]))
         ckpt.restore(ckpt_manager.latest_checkpoint)
         print ('Latest checkpoint {} restored!!'.format(num_epoch))
 
@@ -376,14 +376,14 @@ if __name__ == '__main__':
 
         ckpt_save_path = ckpt_manager.save()
         
-        print ('Saving checkpoint for epoch {} at {}'.format(epoch+1,ckpt_save_path))
+        print ('Saving checkpoint for epoch {} at {}'.format(num_epoch+1,ckpt_save_path))
 
-        print ('Epoch {} Loss {:.4f} Accuracy {:.4f}'.format(epoch + 1, train_loss.result(), train_accuracy.result()))
+        print ('Epoch {} Loss {:.4f} Accuracy {:.4f}'.format(num_epoch + 1, train_loss.result(), train_accuracy.result()))
 
         print ('Time taken for 1 epoch: {} secs'.format(time.time() - start))
 
         #validation bleu
-        if num_epoch>10:
+        if num_epoch>5:
             pred=[]
             for (inp, tar) in val_data:
                 tar_real = tar[:, :1]
