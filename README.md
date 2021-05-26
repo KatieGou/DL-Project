@@ -7,11 +7,11 @@ There are three files of code in this project, including train.py, test.py and s
 
 ## To train and test a model:
 - **Step 1** 
-- 
+
   Modify hyper-parameters in setting.py.
 - **Step 2** 
-- 
+
   Run train.py by the command "python train.py". Dataset will be downloaded automatically. Subword vocabulary will be stored for test.
 - **Step 3** 
-- 
+
   Run test.py by the command "python test.py". The final BLEU score of test data will be computed and printed.
