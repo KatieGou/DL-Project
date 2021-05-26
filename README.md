@@ -1,4 +1,4 @@
-# DL-Porject
+# DL-Porject: Transformer Model
 There are three files of code in this project, including train.py, test.py and setting.py.
 
 - The train.py includes the implement of transformer model and training peorcesss. 
